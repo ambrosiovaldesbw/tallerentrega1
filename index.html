@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dispositivo Interactivo - Keyboard Hack</title>
+    <title>Dispositivo Interactivo - Alarma con Modo de Prueba</title>
     <style>
         body {
             background-color: #121212;
@@ -22,12 +22,31 @@
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             text-align: center;
+            width: 320px;
         }
-        h1 { color: #4CAF50; }
-        p { font-size: 18px; color: #bbb; }
+        h1 { color: #4CAF50; font-size: 22px; }
+        p { font-size: 16px; color: #bbb; }
         .activo {
-            color: #ff9800;
+            color: #ff5722;
             font-weight: bold;
+        }
+        .inactivo {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        input[type="time"] {
+            font-size: 20px;
+            padding: 5px;
+            background: #2b2b2b;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+        .info-prueba {
+            font-size: 12px;
+            color: #888;
+            margin-top: 15px;
         }
     </style>
 </head>
@@ -35,29 +54,84 @@
 
     <div class="card">
         <h1>Interfaz Sonora Tangible</h1>
-        <p>Presiona el cojín para activar el sonido.</p>
-        <p>Estado: <span id="estado" class="activo">Esperando activación...</span></p>
+        <p>Estado: <span id="estado" class="inactivo">Configura tu alarma</span></p>
+        
+        <div id="seccionReloj">
+            <p>Configura la hora:</p>
+            <input type="time" id="horaProgramada">
+            <p style="font-size: 14px; margin-top: 10px; color: #888;">Hora actual: <span id="relojActual">--:--:--</span></p>
+        </div>
+
+        <div class="info-prueba">💡 Tip: Presiona 2 veces rápido el cojín para probar la alarma al instante.</div>
     </div>
 
     <script>
-        // Creamos el audio por código (asegúrate de que el archivo se llame alarma.mp3 en la carpeta)
         const audio = new Audio('alarma.mp3');
+        audio.loop = true;
         const estadoText = document.getElementById('estado');
+        const inputHora = document.getElementById('horaProgramada');
+        const relojActualText = document.getElementById('relojActual');
 
-        window.addEventListener('keydown', (evento) => {
-            if (evento.key === '8' || evento.code === 'Digit8' || evento.code === 'Numpad8') {
+        let alarmaSonando = false;  
+        let alarmaDisparadaHoy = false; 
+        let ultimoClick = 0; // Para detectar el doble toque rápido (modo de prueba)
+
+        function dispararAlarma() {
+            if (!alarmaSonando) {
+                alarmaSonando = true;
+                alarmaDisparadaHoy = true;
                 audio.currentTime = 0;
-                audio.play().then(() => {
-                    console.log("Audio sonando con éxito");
-                }).catch(error => {
-                    console.log("Error al reproducir (¿Faltó hacer clic en la página?):", error);
-                });
-                
-                estadoText.innerText = "¡Cojín activado! Sonando...";
-                
-                setTimeout(() => {
-                    estadoText.innerText = "Esperando activación...";
-                }, 500);
+                audio.play().catch(error => console.log("Error de audio:", error));
+                estadoText.innerText = "¡ALARMA DISPARADA!";
+                estadoText.className = "activo";
+            }
+        }
+
+        function apagarAlarma() {
+            alarmaSonando = false;
+            audio.pause();
+            audio.currentTime = 0;
+            estadoText.innerText = "Configura tu alarma";
+            estadoText.className = "inactivo";
+        }
+
+        // Reloj en tiempo real
+        setInterval(() => {
+            const ahora = new Date();
+            const horas = String(ahora.getHours()).padStart(2, '0');
+            const minutos = String(ahora.getMinutes()).padStart(2, '0');
+            const segundos = String(ahora.getSeconds()).padStart(2, '0');
+            
+            const horaActualString = `${horas}:${minutos}`;
+            relojActualText.innerText = `${horas}:${minutos}:${segundos}`;
+
+            if (segundos === "00") {
+                alarmaDisparadaHoy = false;
+            }
+
+            if (!alarmaSonando && !alarmaDisparadaHoy && inputHora.value === horaActualString && inputHora.value !== "") {
+                dispararAlarma();
+            }
+        }, 1000);
+
+        // Control mediante el teclado (tecla 4 / tu cojín)
+        window.addEventListener('keydown', (evento) => {
+            if (evento.key === '4' || evento.code === 'Digit4' || evento.code === 'Numpad4') {
+                const ahoraMismo = Date.now();
+
+                if (alarmaSonando) {
+                    // Si ya está sonando, un toque apaga la alarma
+                    apagarAlarma();
+                } else {
+                    // Detectar doble toque rápido (< 500 milisegundos) para el Modo de Prueba
+                    if (ahoraMismo - ultimoClick < 500) {
+                        dispararAlarma(); // ¡Fuerza el disparo inmediato!
+                    } else {
+                        // Un toque normal (solo escribe o previene errores)
+                        estadoText.innerText = "Configura tu alarma (Doble toque para probar)";
+                    }
+                    ultimoClick = ahoraMismo;
+                }
             }
         });
     </script>
