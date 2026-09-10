@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dispositivo Interactivo - Keyboard Hack</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: #1e1e1e;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        h1 { color: #4CAF50; }
+        p { font-size: 18px; color: #bbb; }
+        .activo {
+            color: #ff9800;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>Interfaz Sonora Tangible</h1>
+        <p>Presiona el cojín para activar el sonido.</p>
+        <p>Estado: <span id="estado" class="activo">Esperando activación...</span></p>
+    </div>
+
+    <script>
+        // Creamos el audio por código (asegúrate de que el archivo se llame alarma.mp3 en la carpeta)
+        const audio = new Audio('alarma.mp3');
+        const estadoText = document.getElementById('estado');
+
+        window.addEventListener('keydown', (evento) => {
+            if (evento.key === '8' || evento.code === 'Digit8' || evento.code === 'Numpad8') {
+                audio.currentTime = 0;
+                audio.play().then(() => {
+                    console.log("Audio sonando con éxito");
+                }).catch(error => {
+                    console.log("Error al reproducir (¿Faltó hacer clic en la página?):", error);
+                });
+                
+                estadoText.innerText = "¡Cojín activado! Sonando...";
+                
+                setTimeout(() => {
+                    estadoText.innerText = "Esperando activación...";
+                }, 500);
+            }
+        });
+    </script>
+
+</body>
+</html>
