@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SonAlerta - Interfaz Sonora Tangible</title>
+<style>
+body{background:#121212;color:#fff;font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;padding:30px 16px}.card{background:#1e1e1e;padding:30px;border-radius:12px;box-shadow:0 4px 15px #0008;text-align:center;width:320px}h1{color:#4CAF50;font-size:22px}p{font-size:16px;color:#bbb}.activo{color:#ff5722;font-weight:bold}.inactivo{color:#4CAF50;font-weight:bold}input[type=time]{font-size:20px;padding:5px;background:#2b2b2b;color:#fff;border:1px solid #555;border-radius:6px;margin-top:10px}.info-prueba{font-size:12px;color:#888;margin-top:15px}.recursos{margin-top:25px;padding-top:20px;border-top:1px solid #444}.recursos h2{font-size:15px}.btn{display:block;padding:12px;margin-top:10px;border-radius:7px;text-decoration:none;color:#fff;font-weight:bold;font-size:14px}.ppt{background:#4CAF50}.video{background:#ff5722}
+</style>
+</head>
+<body><div class="card">
+<h1>SonAlerta</h1><p>Interfaz Sonora Tangible</p>
+<p>Estado: <span id="estado" class="inactivo">Configura tu alarma</span></p>
+<p>Configura la hora:</p><input type="time" id="horaProgramada">
+<p style="font-size:14px;color:#888">Hora actual: <span id="relojActual">--:--:--</span></p>
+<div class="info-prueba">💡 Tip: Presiona 2 veces rápido la tecla 4 para probar la alarma al instante.</div>
+<div class="recursos"><h2>Material del proyecto</h2>
+<a class="btn ppt" href="https://docs.google.com/presentation/d/1tnpkek4-asZkoPRG29BaQO3RObmNcCnm/edit?usp=sharing&ouid=112992299878516842450&rtpof=true&sd=true" target="_blank">Ver presentación ↗</a>
+<a class="btn video" href="https://youtube.com/shorts/s1tfY28kHCA?feature=share" target="_blank">Ver demostración en video ↗</a>
+</div></div>
+<script>
+const audio=new Audio('alarma.mp3');audio.loop=true;
+const estadoText=document.getElementById('estado'),inputHora=document.getElementById('horaProgramada'),relojActualText=document.getElementById('relojActual');
+let alarmaSonando=false,alarmaDisparadaHoy=false,ultimoClick=0;
+function dispararAlarma(){if(!alarmaSonando){alarmaSonando=true;alarmaDisparadaHoy=true;audio.currentTime=0;audio.play().catch(e=>console.log(e));estadoText.innerText="¡ALARMA DISPARADA!";estadoText.className="activo"}}
+function apagarAlarma(){alarmaSonando=false;audio.pause();audio.currentTime=0;estadoText.innerText="Configura tu alarma";estadoText.className="inactivo"}
+setInterval(()=>{const a=new Date(),h=String(a.getHours()).padStart(2,'0'),m=String(a.getMinutes()).padStart(2,'0'),s=String(a.getSeconds()).padStart(2,'0');relojActualText.innerText=`${h}:${m}:${s}`;if(s==="00")alarmaDisparadaHoy=false;if(!alarmaSonando&&!alarmaDisparadaHoy&&inputHora.value===`${h}:${m}`&&inputHora.value!=="")dispararAlarma()},1000);
+window.addEventListener('keydown',e=>{if(e.key==='4'||e.code==='Digit4'||e.code==='Numpad4'){const a=Date.now();if(alarmaSonando)apagarAlarma();else{if(a-ultimoClick<500)dispararAlarma();else estadoText.innerText="Configura tu alarma (Doble toque para probar)";ultimoClick=a}}});
+</script></body></html>
